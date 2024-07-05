@@ -1,0 +1,64 @@
+import random
+import math
+
+# Secret value
+s = 5
+
+# Prime number
+q = 97
+list_length = 20
+
+# Predefined vector A
+A = [80, 86, 19, 62, 2, 83, 25, 47, 20, 58, 45, 15, 30, 68, 4, 13, 8, 6, 42, 92]
+print('A = ', A)
+
+# Predefined error values
+e = [3, 3, 4, 1, 3, 3, 4, 4, 1, 4, 3, 3, 2, 2, 3, 2, 4, 4, 1, 3]
+
+# Compute vector B
+def compute_b(A, e, s, q):
+    B = [(A[i] * s + e[i]) % q for i in range(len(A))]
+    return B
+
+B = compute_b(A, e, s, q)
+print("B = ", B)
+print("e = ", e)
+
+# Public key is (A, B)
+
+# Convert the message to binary
+message = "12345678"
+binary_message = ''.join(format(ord(char), '08b') for char in message)
+print("Binary message: ", binary_message)
+
+# Function to encrypt a single bit
+def encrypt_bit(bit, A, B, q, n_samples):
+    M = int(bit)
+
+    # Generate unique sample indexes
+    sample_indexes = random.sample(range(list_length), n_samples)
+
+    # Compute u and v
+    u = sum(A[i] for i in sample_indexes) % q
+    v = (sum(B[i] for i in sample_indexes) + (q // 2) * M) % q
+
+    return u, v
+
+# Encrypt each bit of the binary message
+n_samples = 4
+encrypted_bits = [encrypt_bit(bit, A, B, q, n_samples) for bit in binary_message]
+print("Encrypted bits: ", encrypted_bits)
+
+# Function to decrypt a single bit
+def decrypt_bit(encrypted_bit, s, q):
+    u, v = encrypted_bit
+    dec = (v - s * u) % q
+    return '1' if dec > q / 2 else '0'
+
+# Decrypt each bit
+decrypted_bits = [decrypt_bit(encrypted_bit, s, q) for encrypted_bit in encrypted_bits]
+decrypted_binary_message = ''.join(decrypted_bits)
+
+# Convert binary string back to text
+decrypted_message = ''.join(chr(int(decrypted_binary_message[i:i+8], 2)) for i in range(0, len(decrypted_binary_message), 8))
+print("Decrypted message: ", decrypted_message)
